@@ -119,6 +119,14 @@ PATCHED=false
 # - Add ro.surface_flinger.game_default_frame_rate_override if missing
 BACKPORT_SF_PROPS
 
+# Support legacy Camera HAL (pre-API 34)
+# - Some legacy devices (e.g. r8q) expect GPS tags to be non-null
+if [ "$TARGET_PLATFORM_SDK_VERSION" -lt "34" ]; then
+    PATCHED=true
+    APPLY_PATCH "system" "system/framework/framework.jar" \
+        "$MODPATH/camera/framework.jar/0001-Backport-legacy-CameraMetadataNative-code.patch"
+fi
+
 # Support legacy Face HAL (pre-API 34)
 if [ "$TARGET_PLATFORM_SDK_VERSION" -lt "34" ]; then
     if [ ! -f "$WORK_DIR/vendor/bin/hw/vendor.samsung.hardware.biometrics.face@3.0-service" ]; then
@@ -289,6 +297,17 @@ if [ "$TARGET_PLATFORM_SDK_VERSION" -lt "35" ]; then
         HEX_PATCH "$WORK_DIR/system/system/bin/netd" "1f01096be0010054" "1f01096b1f2003d5"
         # - android::net::MobileBBController::isMBBPathsPresent()
         HEX_PATCH "$WORK_DIR/system/system/bin/netd" "1f01096b20010054" "1f01096b1f2003d5"
+    fi
+fi
+
+# Ensure IQtiComposer support (pre-API 36)
+# - Disable "ro.product.first_api_level" < 34 check
+if [ "$TARGET_PLATFORM_SDK_VERSION" -lt "36" ]; then
+    if [[ "$TARGET_OS_SINGLE_SYSTEM_IMAGE" == "qssi" ]] && \
+            ! grep -q -r "IQtiComposer" "$WORK_DIR/vendor/etc/vintf"; then
+        PATCHED=true
+        # [b.lt #0x729be8] -> [nop]
+        HEX_PATCH "$WORK_DIR/system/system/bin/surfaceflinger" "9f8a00712b03005400068052" "9f8a00711f2003d500068052"
     fi
 fi
 
