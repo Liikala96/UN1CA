@@ -3,7 +3,6 @@ From: Salvo Giangreco <giangrecosalvo9@gmail.com>
 Date: Fri, 14 Nov 2025 19:35:05 +0100
 Subject: [PATCH] Disable SemService
 
-UN1CA: this patch is not complete! Please check unica/patches/ese/customize.sh for more info.
 ---
  .../com/android/server/SemService$1.smali     |   92 -
  .../server/SemService$SPITimeoutTask.smali    |   67 -
@@ -4981,4 +4980,3 @@ index f3e285e5..2653f5f4 100644
      return-void
 -- 
 2.51.2
-
