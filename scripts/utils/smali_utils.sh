@@ -13,7 +13,7 @@ source "$SRC_DIR/scripts/utils/common_utils.sh"
 # - remove: Deletes the provided smali file entirely
 # - replace <method> <value> <replacement>: Replaces the occurence of the supplied string in the provided method
 # - replaceall <value> <replacement>: Replaces all the occurences of the supplied string in the whole smali file
-# - return <method> <value>: Patches the supplied method in order to return the desired value
+# - return <method> <value>: Patches the supplied method in order to return the desidered value
 # - strip <method>: Deletes the supplied method in the provided smali file
 SMALI_PATCH()
 {
@@ -60,6 +60,7 @@ SMALI_PATCH()
     fi
 
     if [[ "$OPERATION" == "return" ]]; then
+        _CHECK_NON_EMPTY_PARAM "VALUE" "$6" || return 1
         local VALUE="$6"
     fi
 
@@ -240,8 +241,6 @@ SMALI_PATCH()
             VALUE="\"$VALUE\""
             RET="return-object $REG"
         elif [[ "$RET" =~ ^\[*[ZBCSIJFD]$ ]]; then
-            _CHECK_NON_EMPTY_PARAM "VALUE" "$VALUE" || return 1
-
             # Boolean type
             if [[ "$RET" == "Z" ]]; then
                 if [[ "$VALUE" == "true" ]]; then
@@ -273,8 +272,6 @@ SMALI_PATCH()
                 RET="return $REG"
             fi
         else
-            _CHECK_NON_EMPTY_PARAM "VALUE" "$VALUE" || return 1
-
             if [[ "$VALUE" == "null" ]]; then
                 VALUE="0x0"
             fi

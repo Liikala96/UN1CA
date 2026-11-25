@@ -63,7 +63,7 @@ DECODE_APK()
 }
 
 # GET_GALAXY_STORE_DOWNLOAD_URL "<package name/id>"
-# Returns a URL to download the desired app from Samsung servers.
+# Returns a URL to download the desidered app from Samsung servers.
 GET_GALAXY_STORE_DOWNLOAD_URL()
 {
     _CHECK_NON_EMPTY_PARAM "PACKAGE" "$1" || return 1
@@ -72,17 +72,15 @@ GET_GALAXY_STORE_DOWNLOAD_URL()
     local DEVICES
     local OS
     local ONEUI
-    local SYSTEMID
     local PROTOCOL
 
+    # Galaxy S26 Ultra EUR_OPENX
     # Galaxy S25 Ultra EUR_OPENX
     # Galaxy S22 Ultra GBL_OPENX
-    # Galaxy S25 Ultra KOR_SINGLEX
-    DEVICES=("SM-S938B" "SM-S901E" "SM-S938N")
+    DEVICES=("SM-S948B" "SM-S938B" "SM-S901E")
 
     OS="$(GET_PROP "system" "ro.build.version.sdk")"
     ONEUI="$(GET_PROP "system" "ro.build.version.oneui")"
-    SYSTEMID="$(date "+%s")"
 
     if [ ! "$OS" ]; then
         # Fallback to Android 16
@@ -95,7 +93,7 @@ GET_GALAXY_STORE_DOWNLOAD_URL()
 
     PROTOCOL+="<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\" ?>"
     PROTOCOL+="<SamsungProtocol networkType=\"0\" openApiVersion=\"$OS\" deviceModel=\"DEVICE\""
-    PROTOCOL+=" mcc=\"262\" mnc=\"01\" csc=\"EUX\" version=\"7.7\" systemId=\"$SYSTEMID\""
+    PROTOCOL+=" mcc=\"262\" mnc=\"01\" csc=\"EUX\" version=\"7.7\""
     PROTOCOL+=" deviceFeature=\"locale=en_GB||abi32=armeabi-v7a:armeabi||abi64=arm64-v8a||oneUiVersion=$ONEUI\">"
     PROTOCOL+="<request id=\"2303\" numParam=\"2\">"
     PROTOCOL+="<param name=\"stduk\">0</param>"
@@ -109,7 +107,7 @@ GET_GALAXY_STORE_DOWNLOAD_URL()
         if [[ "$PACKAGE" =~ ^[+-]?[0-9]+$ ]]; then
             OUT="$PACKAGE"
         else
-            OUT="$(curl -L -s "https://vas.samsungapps.com/stub/stubUpdateCheck.as?appId=$PACKAGE&versionCode=0&deviceId=$i&mcc=262&mnc=01&csc=EUX&sdkVer=$OS&oneUiVersion=$ONEUI&systemId=$SYSTEMID")"
+            OUT="$(curl -L -s "https://vas.samsungapps.com/stub/stubUpdateCheck.as?appId=$PACKAGE&versionCode=0&deviceId=$i&mcc=262&mnc=01&csc=EUX&sdkVer=$OS&oneUiVersion=$ONEUI&systemId=0")"
             OUT="$(grep -o -P "(?<=<productId>)[^<]+" <<< "$OUT")"
             if [ ! "$OUT" ]; then
                 continue
@@ -157,7 +155,7 @@ GET_FLOATING_FEATURE_CONFIG()
 }
 
 # HEX_PATCH "<file>" "<old pattern>" "<new pattern>"
-# Applies the supplied hex patch to the desired file.
+# Applies the supplied hex patch to the desidered file.
 HEX_PATCH()
 {
     _CHECK_NON_EMPTY_PARAM "FILE" "$1" || return 1
@@ -197,7 +195,7 @@ HEX_PATCH()
 }
 
 # SET_FLOATING_FEATURE_CONFIG "<config>" "<value>"
-# Sets the supplied config to the desired value.
+# Sets the supplied config to the desidered value.
 # "-d" or "--delete" can be passed as value to delete the config.
 SET_FLOATING_FEATURE_CONFIG()
 {
@@ -213,7 +211,7 @@ SET_FLOATING_FEATURE_CONFIG()
         return 1
     fi
 
-    if grep -q "<$CONFIG>" "$FILE"; then
+    if grep -q "$CONFIG" "$FILE"; then
         if [[ "$VALUE" == "-d" ]] || [[ "$VALUE" == "--delete" ]]; then
             LOG "- Deleting \"$CONFIG\" config in /system/system/etc/floating_feature.xml"
             sed -i "/<$CONFIG>/d" "$FILE"
