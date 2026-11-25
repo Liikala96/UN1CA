@@ -16,7 +16,7 @@ jobs:
           ref: ONE-UI-8.5
           fetch-depth: 0
 
-      - name: Fetch Project-Berkyt and sync into ONE-UI-8.5 without overwriting target/
+      - name: Fetch Project-Berkyt and sync into ONE-UI-8.5 without overwriting target/ or workflows
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -29,11 +29,12 @@ jobs:
 
           git checkout "berkyt/$BERKYT_BRANCH" -- .
           git checkout HEAD -- target/
+          git checkout HEAD -- .github/workflows/
 
           git add -A
           if git diff --staged --quiet; then
             echo "Nincs eltérés, nem kell commitolni."
           else
-            git commit -m "Sync Project-Berkyt into ONE-UI-8.5 (keep target/)"
+            git commit -m "Sync Project-Berkyt into ONE-UI-8.5 (keep target/ and workflows)"
             git push origin HEAD:ONE-UI-8.5 --force
           fi
