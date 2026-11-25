@@ -1,0 +1,39 @@
+name: Sync Project-Berkyt into ONE-UI-8.5 (keep target)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Liikala96/UN1CA (ONE-UI-8.5)
+        uses: actions/checkout@v4
+        with:
+          ref: ONE-UI-8.5
+          fetch-depth: 0
+
+      - name: Fetch Project-Berkyt and sync into ONE-UI-8.5 without overwriting target/
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git remote add berkyt https://github.com/Yacinegti-DZ/Project-Berkyt.git
+          git fetch berkyt --depth=1
+
+          BERKYT_BRANCH=$(git remote show berkyt | awk '/HEAD branch/ {print $NF}')
+          echo "Berkyt branch: $BERKYT_BRANCH"
+
+          git checkout "berkyt/$BERKYT_BRANCH" -- .
+          git checkout HEAD -- target/
+
+          git add -A
+          if git diff --staged --quiet; then
+            echo "Nincs eltérés, nem kell commitolni."
+          else
+            git commit -m "Sync Project-Berkyt into ONE-UI-8.5 (keep target/)"
+            git push origin HEAD:ONE-UI-8.5 --force
+          fi
