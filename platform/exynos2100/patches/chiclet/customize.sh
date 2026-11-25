@@ -1,10 +1,13 @@
-KERNEL_API_URL="https://api.github.com/repos/UN1CA/kernel_samsung_exynos2100/releases/latest"
+KERNEL_API_URL="https://api.github.com/repos/UN1CA/kernel_samsung_exynos2100/releases/tags/v7"
+
+KERNEL_JSON="$(curl -fsSL "$KERNEL_API_URL")"
 
 LATEST_TAG="$(
-    curl -s "$KERNEL_API_URL" \
+    printf '%s\n' "$KERNEL_JSON" \
     | grep -m1 '"tag_name"' \
     | cut -d '"' -f4
 )"
+: "${LATEST_TAG:=v7}"
 
 KERNEL_DL_BASE="https://github.com/UN1CA/kernel_samsung_exynos2100/releases/download/$LATEST_TAG"
 
@@ -15,11 +18,16 @@ fi
 mkdir -p "$TMP_DIR"
 
 KERNEL_ARCHIVE="$(
-    curl -s "$KERNEL_API_URL" \
+    printf '%s\n' "$KERNEL_JSON" \
     | grep -oE "ChicletKernel-.*_${TARGET_CODENAME}_VANILLA_OFFICIAL_.*\.zip" \
     | sort -u \
     | tail -n 1
 )"
+
+if [[ -z "$KERNEL_ARCHIVE" ]]; then
+    LOGE "No matching kernel zip found for TARGET_CODENAME='$TARGET_CODENAME' in tag '$LATEST_TAG'"
+    exit 1
+fi
 
 DOWNLOAD_FILE "$KERNEL_DL_BASE/$KERNEL_ARCHIVE" "$TMP_DIR/$KERNEL_ARCHIVE"
 
@@ -39,4 +47,4 @@ EVAL "rm -rf \"$TMP_DIR\""
 
 LOG_STEP_OUT
 
-unset KERNEL_ARCHIVE KERNEL_API_URL KERNEL_DL_BASE
+unset KERNEL_ARCHIVE KERNEL_API_URL KERNEL_DL_BASE KERNEL_JSON LATEST_TAG
