@@ -1,4 +1,4 @@
-name: Sync Project-Berkyt into ONE-UI-8.5 (keep target)
+name: Sync Project-Berkyt into ONE-UI-8.5 (keep unica/patches)
 
 on:
   workflow_dispatch:
@@ -16,7 +16,7 @@ jobs:
           ref: ONE-UI-8.5
           fetch-depth: 0
 
-      - name: Fetch Project-Berkyt and sync into ONE-UI-8.5 without overwriting target/ or workflows
+      - name: Fetch Project-Berkyt and sync into ONE-UI-8.5 keeping unica/patches
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -27,14 +27,20 @@ jobs:
           BERKYT_BRANCH=$(git remote show berkyt | awk '/HEAD branch/ {print $NF}')
           echo "Berkyt branch: $BERKYT_BRANCH"
 
-          git checkout "berkyt/$BERKYT_BRANCH" -- .
-          git checkout HEAD -- target/
-          git checkout HEAD -- .github/workflows/
+          rm -rf /tmp/berkyt_src
+          git worktree add --detach /tmp/berkyt_src "berkyt/$BERKYT_BRANCH"
+
+          rsync -a --delete \
+            --exclude='.git/' \
+            --exclude='unica/patches/' \
+            /tmp/berkyt_src/ ./
+
+          git worktree remove --force /tmp/berkyt_src || rm -rf /tmp/berkyt_src
 
           git add -A
           if git diff --staged --quiet; then
             echo "Nincs eltérés, nem kell commitolni."
           else
-            git commit -m "Sync Project-Berkyt into ONE-UI-8.5 (keep target/ and workflows)"
+            git commit -m "Sync Project-Berkyt into ONE-UI-8.5 (keep unica/patches)"
             git push origin HEAD:ONE-UI-8.5 --force
           fi
